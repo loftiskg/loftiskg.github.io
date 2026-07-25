@@ -1,0 +1,128 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+
+// Drafts are visible locally but never published.
+const posts = (
+	await getCollection('writing', ({ data }) => import.meta.env.PROD ? !data.draft : true)
+).sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+const dateFormat = new Intl.DateTimeFormat('en-US', {
+	year: 'numeric',
+	month: 'long',
+	day: 'numeric',
+	timeZone: 'UTC',
+});
+---
+
+<Layout title="Writing — Kevin Loftis" description="Posts by Kevin Loftis.">
+	<main>
+		<nav><a href="/">← Home</a></nav>
+		<h1>Writing</h1>
+
+		<ul class="posts">
+			{
+				posts.map((post) => (
+					<li>
+						<a href={`/writing/${post.id}/`}>{post.data.title}</a>
+						{post.data.draft && <span class="draft">draft</span>}
+						<p>{post.data.description}</p>
+						<time datetime={post.data.pubDate.toISOString()}>
+							{dateFormat.format(post.data.pubDate)}
+						</time>
+					</li>
+				))
+			}
+		</ul>
+
+		{posts.length === 0 && <p>Nothing here yet.</p>}
+	</main>
+</Layout>
+
+<style>
+	main {
+		max-width: 42rem;
+		margin: 0 auto;
+		padding: 3rem 1.5rem 6rem;
+		font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+		line-height: 1.6;
+		color: #1a1a1a;
+	}
+
+	nav {
+		margin-bottom: 2.5rem;
+		font-size: 0.9rem;
+	}
+
+	nav a {
+		color: #666;
+		text-decoration: none;
+	}
+
+	nav a:hover {
+		color: #1a1a1a;
+	}
+
+	h1 {
+		font-size: 2rem;
+		margin: 0 0 2.5rem;
+		letter-spacing: -0.02em;
+	}
+
+	.posts {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: grid;
+		gap: 2.5rem;
+	}
+
+	.posts > li > a {
+		font-size: 1.2rem;
+		font-weight: 600;
+		color: #1a1a1a;
+		text-decoration: none;
+	}
+
+	.posts > li > a:hover {
+		text-decoration: underline;
+	}
+
+	.posts p {
+		margin: 0.4rem 0 0.5rem;
+		color: #444;
+	}
+
+	.draft {
+		margin-left: 0.5rem;
+		font-size: 0.7rem;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: #b45309;
+		border: 1px solid currentColor;
+		border-radius: 3px;
+		padding: 0.05rem 0.3rem;
+		vertical-align: middle;
+	}
+
+	time {
+		font-size: 0.85rem;
+		color: #777;
+	}
+
+	@media (prefers-color-scheme: dark) {
+		main {
+			color: #e8e8e8;
+		}
+		h1,
+		.posts > li > a {
+			color: #f5f5f5;
+		}
+		.posts p {
+			color: #b8b8b8;
+		}
+		nav a:hover {
+			color: #f5f5f5;
+		}
+	}
+</style>

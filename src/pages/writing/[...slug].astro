@@ -1,0 +1,148 @@
+---
+import { getCollection, render } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+
+export async function getStaticPaths() {
+	const posts = await getCollection('writing', ({ data }) =>
+		import.meta.env.PROD ? !data.draft : true
+	);
+	return posts.map((post) => ({
+		params: { slug: post.id },
+		props: { post },
+	}));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+
+const dateFormat = new Intl.DateTimeFormat('en-US', {
+	year: 'numeric',
+	month: 'long',
+	day: 'numeric',
+	timeZone: 'UTC',
+});
+---
+
+<Layout title={`${post.data.title} — Kevin Loftis`} description={post.data.description}>
+	<main>
+		<nav><a href="/writing/">← Writing</a></nav>
+
+		<article>
+			<header>
+				<h1>{post.data.title}</h1>
+				<time datetime={post.data.pubDate.toISOString()}>
+					{dateFormat.format(post.data.pubDate)}
+				</time>
+			</header>
+			<Content />
+		</article>
+	</main>
+</Layout>
+
+<style>
+	main {
+		max-width: 42rem;
+		margin: 0 auto;
+		padding: 3rem 1.5rem 6rem;
+		font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+		line-height: 1.7;
+		color: #1a1a1a;
+	}
+
+	nav {
+		margin-bottom: 2.5rem;
+		font-size: 0.9rem;
+	}
+
+	nav a {
+		color: #666;
+		text-decoration: none;
+	}
+
+	nav a:hover {
+		color: #1a1a1a;
+	}
+
+	header {
+		margin-bottom: 2.5rem;
+	}
+
+	h1 {
+		font-size: 2rem;
+		margin: 0 0 0.5rem;
+		line-height: 1.2;
+		letter-spacing: -0.02em;
+	}
+
+	time {
+		font-size: 0.85rem;
+		color: #777;
+	}
+
+	article :global(h2) {
+		font-size: 1.35rem;
+		margin: 2.5rem 0 0.75rem;
+		letter-spacing: -0.01em;
+	}
+
+	article :global(p),
+	article :global(li) {
+		color: #333;
+	}
+
+	article :global(a) {
+		color: #1a5fb4;
+	}
+
+	article :global(code) {
+		font-size: 0.875em;
+		background: #f0f0f0;
+		padding: 0.1em 0.35em;
+		border-radius: 3px;
+	}
+
+	article :global(pre) {
+		padding: 1rem;
+		border-radius: 6px;
+		overflow-x: auto;
+		font-size: 0.85rem;
+	}
+
+	article :global(pre code) {
+		background: none;
+		padding: 0;
+	}
+
+	article :global(blockquote) {
+		margin: 1.5rem 0;
+		padding-left: 1rem;
+		border-left: 3px solid #ddd;
+		color: #555;
+	}
+
+	@media (prefers-color-scheme: dark) {
+		main {
+			color: #e8e8e8;
+		}
+		h1 {
+			color: #f5f5f5;
+		}
+		nav a:hover {
+			color: #f5f5f5;
+		}
+		article :global(p),
+		article :global(li) {
+			color: #d0d0d0;
+		}
+		article :global(a) {
+			color: #7cb3f0;
+		}
+		article :global(code) {
+			background: #2a2a2a;
+		}
+		article :global(blockquote) {
+			border-left-color: #444;
+			color: #aaa;
+		}
+	}
+</style>
