@@ -4,7 +4,7 @@ import Layout from '../../layouts/Layout.astro';
 
 // Drafts are visible locally but never published.
 const posts = (
-	await getCollection('writing', ({ data }) => import.meta.env.PROD ? !data.draft : true)
+	await getCollection('writing', ({ data }) => (import.meta.env.PROD ? !data.draft : true))
 ).sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 
 const dateFormat = new Intl.DateTimeFormat('en-US', {
@@ -17,14 +17,17 @@ const dateFormat = new Intl.DateTimeFormat('en-US', {
 
 <Layout title="Writing — Kevin Loftis" description="Posts by Kevin Loftis.">
 	<main>
-		<nav><a href="/">← Home</a></nav>
+		<nav><a class="link back" href="/">Kevin Loftis</a></nav>
+
 		<h1>Writing</h1>
 
 		<ul class="posts">
 			{
 				posts.map((post) => (
 					<li>
-						<a href={`/writing/${post.id}/`}>{post.data.title}</a>
+						<a class="link title" href={`/writing/${post.id}/`}>
+							{post.data.title}
+						</a>
 						{post.data.draft && <span class="draft">draft</span>}
 						<p>{post.data.description}</p>
 						<time datetime={post.data.pubDate.toISOString()}>
@@ -35,94 +38,88 @@ const dateFormat = new Intl.DateTimeFormat('en-US', {
 			}
 		</ul>
 
-		{posts.length === 0 && <p>Nothing here yet.</p>}
+		{posts.length === 0 && <p class="empty">Nothing here yet.</p>}
 	</main>
 </Layout>
 
 <style>
 	main {
-		max-width: 42rem;
-		margin: 0 auto;
-		padding: 3rem 1.5rem 6rem;
-		font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
-		line-height: 1.6;
-		color: #1a1a1a;
+		max-width: 46rem;
+		padding: clamp(3rem, 10vh, 5rem) var(--gutter) clamp(4rem, 12vh, 8rem);
 	}
 
 	nav {
-		margin-bottom: 2.5rem;
-		font-size: 0.9rem;
+		margin-bottom: clamp(3rem, 8vw, 4.5rem);
 	}
 
-	nav a {
-		color: #666;
-		text-decoration: none;
-	}
-
-	nav a:hover {
-		color: #1a1a1a;
+	.back {
+		font-size: 0.7rem;
+		text-transform: uppercase;
+		letter-spacing: 0.22em;
+		color: var(--muted);
 	}
 
 	h1 {
-		font-size: 2rem;
-		margin: 0 0 2.5rem;
-		letter-spacing: -0.02em;
+		margin: 0 0 clamp(2.5rem, 7vw, 4rem);
+		font-family: var(--font-mono), ui-monospace, monospace;
+		font-weight: 500;
+		font-size: clamp(2rem, 7vw, 3rem);
+		line-height: 1;
+		letter-spacing: -0.045em;
+		text-indent: -0.05em;
 	}
 
 	.posts {
 		list-style: none;
-		padding: 0;
 		margin: 0;
+		padding: 0;
 		display: grid;
-		gap: 2.5rem;
+		gap: clamp(2.25rem, 5vw, 3rem);
 	}
 
-	.posts > li > a {
-		font-size: 1.2rem;
-		font-weight: 600;
-		color: #1a1a1a;
-		text-decoration: none;
-	}
-
-	.posts > li > a:hover {
-		text-decoration: underline;
+	.title {
+		font-size: 1.15rem;
 	}
 
 	.posts p {
-		margin: 0.4rem 0 0.5rem;
-		color: #444;
+		max-width: var(--measure);
+		margin: 0.5rem 0 0.6rem;
+		color: var(--muted);
+	}
+
+	time,
+	.empty {
+		font-family: var(--font-mono), ui-monospace, monospace;
+		font-size: 0.75rem;
+		letter-spacing: 0.06em;
+		color: var(--muted);
 	}
 
 	.draft {
-		margin-left: 0.5rem;
-		font-size: 0.7rem;
+		margin-left: 0.6rem;
+		font-family: var(--font-mono), ui-monospace, monospace;
+		font-size: 0.6rem;
 		text-transform: uppercase;
-		letter-spacing: 0.06em;
-		color: #b45309;
-		border: 1px solid currentColor;
-		border-radius: 3px;
-		padding: 0.05rem 0.3rem;
-		vertical-align: middle;
+		letter-spacing: 0.16em;
+		color: var(--accent);
+		vertical-align: 0.15em;
 	}
 
-	time {
-		font-size: 0.85rem;
-		color: #777;
+	.link {
+		font-family: var(--font-mono), ui-monospace, monospace;
+		text-decoration: none;
+		background-image: linear-gradient(var(--accent), var(--accent));
+		background-repeat: no-repeat;
+		background-position: 0 calc(100% - 0.05em);
+		background-size: 0% 1px;
+		transition:
+			background-size 0.3s cubic-bezier(0.2, 0.7, 0.3, 1),
+			color 0.2s ease;
 	}
 
-	@media (prefers-color-scheme: dark) {
-		main {
-			color: #e8e8e8;
-		}
-		h1,
-		.posts > li > a {
-			color: #f5f5f5;
-		}
-		.posts p {
-			color: #b8b8b8;
-		}
-		nav a:hover {
-			color: #f5f5f5;
-		}
+	.link:hover,
+	.link:focus-visible {
+		color: var(--accent);
+		background-size: 100% 1px;
 	}
 </style>

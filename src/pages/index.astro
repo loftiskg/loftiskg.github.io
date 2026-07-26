@@ -1,11 +1,205 @@
 ---
-import Welcome from '../components/Welcome.astro';
+import { getCollection } from 'astro:content';
 import Layout from '../layouts/Layout.astro';
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+// ─────────────────────────────────────────────────────────────
+// EDIT ME. Everything personal about this page lives right here.
+// ─────────────────────────────────────────────────────────────
+
+// The single highest-leverage sentence on the site. Replace it.
+const bio =
+	'PLACEHOLDER — one or two sentences about what you do, what you work on, ' +
+	'and what someone should email you about. Write this in your own voice.';
+
+// Only verified links are listed. Uncomment and fill in as you go.
+const links = [
+	{ label: 'GitHub', href: 'https://github.com/loftiskg' },
+	// { label: 'LinkedIn', href: 'https://www.linkedin.com/in/…' },
+	// { label: 'Email', href: 'mailto:…' },
+];
+
+// ─────────────────────────────────────────────────────────────
+
+// Titles only, no dates: a homepage that advertises its own staleness
+// is worse than one that just points at the writing.
+const posts = (
+	await getCollection('writing', ({ data }) => (import.meta.env.PROD ? !data.draft : true))
+)
+	.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+	.slice(0, 3);
 ---
 
-<Layout>
-	<Welcome />
+<Layout description="Kevin Loftis — engineer. Writing and projects.">
+	<main>
+		<h1 class="name">Kevin<br />Loftis</h1>
+
+		<p class="bio">{bio}</p>
+
+		<section class="section">
+			<h2 class="eyebrow">Writing</h2>
+			<ul class="stack">
+				{
+					posts.map((post) => (
+						<li>
+							<a class="link entry" href={`/writing/${post.id}/`}>
+								{post.data.title}
+							</a>
+						</li>
+					))
+				}
+			</ul>
+			<a class="link more" href="/writing/">All writing</a>
+		</section>
+
+		<section class="section">
+			<h2 class="eyebrow">Projects</h2>
+			<p class="empty">Nothing here yet.</p>
+		</section>
+
+		<section class="section">
+			<h2 class="eyebrow">Elsewhere</h2>
+			<ul class="row">
+				{
+					links.map((link) => (
+						<li>
+							<a class="link entry" href={link.href} rel="me">
+								{link.label}
+							</a>
+						</li>
+					))
+				}
+			</ul>
+		</section>
+	</main>
 </Layout>
+
+<style>
+	main {
+		max-width: 46rem;
+		padding: clamp(4rem, 16vh, 9rem) var(--gutter) clamp(4rem, 12vh, 8rem);
+	}
+
+	/* The signature: mono set enormous and tracked tight, against
+	   everything else set small and tracked wide. */
+	.name {
+		margin: 0;
+		font-family: var(--font-mono), ui-monospace, monospace;
+		font-weight: 500;
+		font-size: clamp(3rem, 13vw, 6.5rem);
+		line-height: 0.9;
+		letter-spacing: -0.055em;
+		text-indent: -0.06em; /* optically align the K to the margin */
+	}
+
+	/* The one human sentence on an otherwise machine-set page. */
+	.bio {
+		max-width: var(--measure);
+		margin: clamp(2rem, 5vw, 3rem) 0 0;
+		font-size: clamp(1.15rem, 2.6vw, 1.45rem);
+		line-height: 1.5;
+		text-wrap: pretty;
+	}
+
+	.section {
+		margin-top: var(--gap-section);
+	}
+
+	.eyebrow {
+		margin: 0 0 1.1rem;
+		font-family: var(--font-mono), ui-monospace, monospace;
+		font-size: 0.7rem;
+		font-weight: 400;
+		text-transform: uppercase;
+		letter-spacing: 0.22em;
+		color: var(--muted);
+	}
+
+	.stack,
+	.row {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+
+	.stack {
+		display: grid;
+		gap: 0.6rem;
+	}
+
+	.row {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 1.5rem;
+	}
+
+	/* Accent is reserved for things you can interact with. Nothing
+	   decorative gets colored. */
+	.link {
+		font-family: var(--font-mono), ui-monospace, monospace;
+		text-decoration: none;
+		background-image: linear-gradient(var(--accent), var(--accent));
+		background-repeat: no-repeat;
+		background-position: 0 calc(100% - 0.05em);
+		background-size: 0% 1px;
+		transition:
+			background-size 0.3s cubic-bezier(0.2, 0.7, 0.3, 1),
+			color 0.2s ease;
+	}
+
+	.link:hover,
+	.link:focus-visible {
+		color: var(--accent);
+		background-size: 100% 1px;
+	}
+
+	.entry {
+		font-size: 1rem;
+	}
+
+	.more {
+		display: inline-block;
+		margin-top: 1.4rem;
+		font-size: 0.8rem;
+		letter-spacing: 0.02em;
+		color: var(--muted);
+	}
+
+	.empty {
+		margin: 0;
+		font-family: var(--font-mono), ui-monospace, monospace;
+		font-size: 0.9rem;
+		color: var(--muted);
+	}
+
+	/* One gesture, once, on load. */
+	@media (prefers-reduced-motion: no-preference) {
+		.name,
+		.bio,
+		.section {
+			animation: rise 0.7s cubic-bezier(0.2, 0.7, 0.3, 1) backwards;
+		}
+		.bio {
+			animation-delay: 0.08s;
+		}
+		.section:nth-of-type(1) {
+			animation-delay: 0.16s;
+		}
+		.section:nth-of-type(2) {
+			animation-delay: 0.22s;
+		}
+		.section:nth-of-type(3) {
+			animation-delay: 0.28s;
+		}
+	}
+
+	@keyframes rise {
+		from {
+			opacity: 0;
+			transform: translateY(0.6rem);
+		}
+		to {
+			opacity: 1;
+			transform: none;
+		}
+	}
+</style>
